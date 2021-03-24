@@ -1,7 +1,4 @@
-requests
-pydantic
+requests==2.25
+pydantic==1.8
 weather-forecast-collection @ git+https://github.com/jhrcook/weather_forecast_collection.git
-mypy
-black
-isort
 typer==0.3.2

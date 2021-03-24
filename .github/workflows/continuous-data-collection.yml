@@ -20,7 +20,7 @@ jobs:
       - name: Pip install packages
         run: pip install -r requirements.txt
       - name: Collect data
-        run: ./main.py all-data Boston
+        run: ./main.py national-weather-service Boston #./main.py all-data Boston
       - name: Commit new data
         uses: EndBug/add-and-commit@v7.1.0
         with:
