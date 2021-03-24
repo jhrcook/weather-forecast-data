@@ -1,0 +1,33 @@
+name: Data Collection
+on: commit
+
+jobs:
+  run:
+    name: Collect weather data
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Setup Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+          architecture: 'x64'
+      - name: Python details
+        run: |
+          python3 --version
+          which python3
+      - name: Pip install packages
+        run: pip install -r requirements.txt
+      - name: Collect data
+        run: ./main.py all-data Boston
+      - name: Commit new data
+        uses: EndBug/add-and-commit@v7.1.0
+        with:
+          author_name: Joshua Cook
+          author_email: joshuacook0023@gmail.com
+          message: "Data collected on $(date)"
+          add: 'data/*json$'
+          branch: data
+          push: true
+          pull_strategy: '--no-rebase'

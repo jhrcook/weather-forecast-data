@@ -16,3 +16,7 @@ This is currently under development, but the goal is to have it run as a chron-j
 git clone https://github.com/jhrcook/weather-forecast-data.git
 pip install -r requirements.txt
 ```
+
+## GitHub Continuous Data Collection
+
+[GitHub Action "Add & Commit"](https://github.com/marketplace/actions/add-commit)
