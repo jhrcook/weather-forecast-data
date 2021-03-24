@@ -29,7 +29,7 @@ jobs:
         with:
           author_name: Joshua Cook
           author_email: joshuacook0023@gmail.com
-          message: "GH Action data collection on {{ steps.date.outputs.date }}"
+          message: "GH Action data collection on ${{ steps.date.outputs.date }}"
           add: 'data/*json'
           branch: data
           push: true
