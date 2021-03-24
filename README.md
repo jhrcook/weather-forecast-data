@@ -8,7 +8,7 @@
 
 A repository of weather forecast and nowcast data collected using the ['weather-forecast-collection'](https://github.com/jhrcook/weather_forecast_collection) package.
 
-This is currently under development, but the goal is to have it run as a chron-job on GitHub Atctions every hour to collect the current weather and weather predictions.
+This is currently under development, but the goal is to have it run as a chron-job on GitHub Actions every hour to collect the current weather and weather predictions.
 
 ## Setup
 
@@ -17,6 +17,19 @@ git clone https://github.com/jhrcook/weather-forecast-data.git
 pip install -r requirements.txt
 ```
 
-## GitHub Continuous Data Collection
+Make sure the CLI is working by trying the following command.
 
-[GitHub Action "Add & Commit"](https://github.com/marketplace/actions/add-commit)
+```bash
+./main.py --help
+```
+
+## Data
+
+The data collected is available in the "data/" directory of the [`weather-data`](https://github.com/jhrcook/weather-forecast-data/tree/weather-data) branch of the GitHub repo.
+
+### GitHub Continuous Data Collection
+
+The data is collected every hour using a GitHub Action.
+The action uses the [setup-python](https://github.com/actions/setup-python) action to setup the environment with Python 3.9.
+The required packages are then installed and the CLI for this project (use `./main.py --help` for help) is used to collect all of the data from each data source.
+Finally, the changes are committed to the [`weather-data`](https://github.com/jhrcook/weather-forecast-data/tree/weather-data) branch using the [Add & Commit](https://github.com/marketplace/actions/add-commit) GitHub Action.
