@@ -31,6 +31,6 @@ jobs:
           author_email: joshuacook0023@gmail.com
           message: GH Action data collection on ${{ steps.date.outputs.date }}
           add: 'data/*json'
-          branch: 'weather-data'
+          # branch: 'weather-data'
           push: true
           pull_strategy: '--no-rebase'
