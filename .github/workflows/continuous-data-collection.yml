@@ -27,7 +27,11 @@ jobs:
       - name: Pip install packages
         run: pip install -r requirements.txt
       - name: Collect data
-        run: ./main.py climacell Boston --api-key=${{ secrets.CLIMACELL_API_KEY }} #./main.py all-data Boston
+        run: |
+          ./main.py all-data Boston \
+            --accu-key=${{ secrets.ACCUWEATHER_API_KEY }} \
+            --owm-key=${{ secrets.OPENWEATHERMAP_API_KEY }} \
+            --cc-key=${{ secrets.CLIMACELL_API_KEY }}
       - name: Commit new data
         uses: EndBug/add-and-commit@v7.1.0
         env:
