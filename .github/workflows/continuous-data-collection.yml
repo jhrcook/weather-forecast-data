@@ -7,8 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Get current date
-        id: date
-        run: echo "::set-output name=date::$(date + '%Y-%m-%dT%H:%M:%S')"
+        run: echo "::set-env name=DATE::$(date + '%Y-%m-%dT%H:%M:%S')"
       - name: Checkout repo
         uses: actions/checkout@v2
       - name: Setup Python 3.9
@@ -27,7 +26,7 @@ jobs:
       - name: Commit new data
         uses: EndBug/add-and-commit@v7.1.0
         env:
-          COMMIT_MSG: GH Action data collection on ${{ steps.date.outputs.date }}
+          COMMIT_MSG: GH Action data collection on ${{ env.DATE }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           author_name: github-actions
