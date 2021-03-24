@@ -1,3 +1,6 @@
 requests
 pydantic
 weather-forecast-collection @ git+https://github.com/jhrcook/weather_forecast_collection.git
+mypy
+black
+isort
