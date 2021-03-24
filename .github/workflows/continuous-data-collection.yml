@@ -1,5 +1,9 @@
 name: Data Collection
-on: push
+on:
+  push:
+    branches:
+      - weather-data
+
 
 jobs:
   run:
