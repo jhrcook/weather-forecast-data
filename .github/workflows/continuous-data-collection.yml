@@ -6,6 +6,9 @@ jobs:
     name: Collect weather data
     runs-on: ubuntu-latest
     steps:
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date + '%Y-%m-%dT%H:%M:%S')"
       - name: Checkout repo
         uses: actions/checkout@v2
       - name: Setup Python 3.9
@@ -26,8 +29,8 @@ jobs:
         with:
           author_name: Joshua Cook
           author_email: joshuacook0023@gmail.com
-          message: "Data collected on $(date)"
-          add: 'data/*json$'
+          message: "GH Action data collection on {{ steps.date.outputs.date }}"
+          add: 'data/*json'
           branch: data
           push: true
           pull_strategy: '--no-rebase'
