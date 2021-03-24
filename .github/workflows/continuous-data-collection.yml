@@ -1,5 +1,5 @@
 name: Data Collection
-on: commit
+on: push
 
 jobs:
   run:
