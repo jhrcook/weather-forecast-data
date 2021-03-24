@@ -26,11 +26,13 @@ jobs:
         run: ./main.py national-weather-service Boston #./main.py all-data Boston
       - name: Commit new data
         uses: EndBug/add-and-commit@v7.1.0
+        env:
+          COMMIT_MSG: GH Action data collection on ${{ steps.date.outputs.date }}
         with:
           author_name: Joshua Cook
           author_email: joshuacook0023@gmail.com
-          message: GH Action data collection on ${{ steps.date.outputs.date }}
+          message: ${{ env.COMMIT_MSG }}
           add: 'data/*json'
-          # branch: 'weather-data'
-          push: true
+          branch: 'weather-data'
+          push: '--set-upstream origin weather-data'
           pull_strategy: '--no-rebase'
