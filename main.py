@@ -121,5 +121,5 @@ if __name__ == "__main__":
     app()
 
 
-# TODO: propogate errors from requests in weather_forecast_collection package and handle here.
+# TODO: propagate errors from requests in weather_forecast_collection package and handle here.
 # TODO: if errors on server (such as 500), automatically re-run at least once
