@@ -6,6 +6,7 @@ from pathlib import Path
 from pprint import pprint
 from typing import Callable
 
+import typer
 from pydantic.main import BaseModel
 from weather_forecast_collection.apis import accuweather_api as accu
 from weather_forecast_collection.apis import climacell_api as cc
@@ -15,7 +16,7 @@ from weather_forecast_collection.apis import openweathermap_api as owm
 import keys
 from coordinates import get_coordinates
 
-# requests_cache.install_cache("dev-cache.sqlite", backend="sqlite", expire_after=86400)
+app = typer.Typer()
 
 DATA_DIR = Path("data")
 if not DATA_DIR.exists():
@@ -42,6 +43,7 @@ def read_data(fp: Path, model: Callable):
         return model(**json.loads(json.load(json_file)))
 
 
+@app.command()
 def national_weather_service(city: str) -> Path:
     coords = get_coordinates(city)
     forecast = nws.get_nsw_forecast(lat=coords.lat, long=coords.long)
@@ -49,6 +51,7 @@ def national_weather_service(city: str) -> Path:
     return fp
 
 
+@app.command()
 def accuweather(city: str) -> Path:
     coords = get_coordinates(city)
     forecast = accu.get_accuweather_forecast(
@@ -58,6 +61,7 @@ def accuweather(city: str) -> Path:
     return fp
 
 
+@app.command()
 def open_weather_map(city: str) -> Path:
     coords = get_coordinates(city)
     forecast = owm.get_openweathermap_data(
@@ -67,6 +71,7 @@ def open_weather_map(city: str) -> Path:
     return fp
 
 
+@app.command()
 def climacell(city: str) -> Path:
     coords = get_coordinates(city)
     forecast = cc.get_climacell_data(
@@ -76,6 +81,7 @@ def climacell(city: str) -> Path:
     return fp
 
 
+@app.command()
 def all_data(city: str):
     _ = national_weather_service(city=city)
     _ = accuweather(city=city)
@@ -84,11 +90,6 @@ def all_data(city: str):
 
 
 if __name__ == "__main__":
-    all_data(city="Boston")
+    app()
 
-    # TODO: Typer CLI. Separate commands for each API and one command for all.
-
-    # TODO: Store data.
-    # Probably easiest to just write each to a separate JSON file with the name "{source}-{timestamp}.json".
-
-    # TODO: GitHub Action to run script and store data.
+# TODO: GitHub Action to run script and store data.

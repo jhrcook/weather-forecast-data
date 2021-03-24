@@ -4,3 +4,4 @@ weather-forecast-collection @ git+https://github.com/jhrcook/weather_forecast_co
 mypy
 black
 isort
+typer==0.3.2
