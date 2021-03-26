@@ -1,18 +1,24 @@
 #!/usr/bin/env python3
 
 import json
+import logging
 from datetime import datetime
 from pathlib import Path
-from pprint import pprint
 from typing import Callable, Optional
 
 import typer
-from click.core import Option
 from pydantic.main import BaseModel
+from requests.exceptions import HTTPError
 from weather_forecast_collection.apis import accuweather_api as accu
 from weather_forecast_collection.apis import climacell_api as cc
 from weather_forecast_collection.apis import national_weather_service_api as nws
 from weather_forecast_collection.apis import openweathermap_api as owm
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(levelname)s] %(asctime)s - %(funcName)s - %(message)s",
+    datefmt="%d-%b-%y %H:%M:%S",
+)
 
 try:
     import keys
@@ -48,60 +54,116 @@ def read_data(fp: Path, model: Callable):
 
 
 @app.command()
-def national_weather_service(city: str) -> Path:
+def national_weather_service(city: str, first_attempt: bool = True) -> None:
+    logging.info("Sending request to NWS API.")
     coords = get_coordinates(city)
-    forecast = nws.get_nsw_forecast(lat=coords.lat, long=coords.long)
-    fp = save_data(source="national-weather-service", city=city, data=forecast)
-    return fp
+    try:
+        forecast = nws.get_nws_forecast(lat=coords.lat, long=coords.long)
+        fp = save_data(source="national-weather-service", city=city, data=forecast)
+        logging.info(f"Saved results to '{fp.as_posix()}'")
+    except HTTPError as http_err:
+        logging.error(f"NWS API request error ({http_err.response.status_code}).")
+        logging.error(http_err.response.json()["detail"])
+        if first_attempt:
+            logging.info("Trying NWS API again.")
+            national_weather_service(city=city, first_attempt=False)
+    except Exception as err:
+        logging.error(err)
 
 
 @app.command()
-def accuweather(city: str, api_key: Optional[str] = None) -> Path:
+def accuweather(
+    city: str, api_key: Optional[str] = None, first_attempt: bool = True
+) -> None:
+    logging.info("Sending request to AccuWeather API.")
     if api_key is None:
         try:
             api_key = keys.accuweather_api_key
         except Exception as err:
-            print(err)
-            raise ValueError("Accuweather key error.")
+            logging.error("Unable to get API key for AccuWeather.")
+            logging.error(err)
+            return
 
     coords = get_coordinates(city)
-    forecast = accu.get_accuweather_forecast(
-        lat=coords.lat, long=coords.long, api_key=api_key
-    )
-    fp = save_data(source="accuweather", city=city, data=forecast)
-    return fp
+    try:
+        forecast = accu.get_accuweather_forecast(
+            lat=coords.lat, long=coords.long, api_key=api_key
+        )
+        fp = save_data(source="accuweather", city=city, data=forecast)
+        logging.info(f"Saved results to '{fp.as_posix()}'")
+    except HTTPError as http_err:
+        logging.error(
+            f"AccuWeather API request error ({http_err.response.status_code})."
+        )
+        logging.error(http_err.response.json()["Message"])
+        if first_attempt and http_err.response.status_code != 503:
+            logging.info("Retrying request to AccuWeather.")
+            accuweather(city=city, api_key=api_key, first_attempt=False)
+    except Exception as err:
+        logging.error(err)
 
 
 @app.command()
-def open_weather_map(city: str, api_key: Optional[str] = None) -> Path:
+def open_weather_map(
+    city: str, api_key: Optional[str] = None, first_attempt: bool = True
+) -> None:
+    logging.info("Sending request to OpenWeatherMap API.")
     if api_key is None:
         try:
             api_key = keys.openweathermap_api_key
         except Exception as err:
-            print(err)
-            raise ValueError("OpenWeatherMap key error.")
+            logging.error("Unable to get API key for OpenWeatherMap.")
+            logging.error(err)
+            return
 
     coords = get_coordinates(city)
-    forecast = owm.get_openweathermap_data(
-        lat=coords.lat, long=coords.long, api_key=api_key
-    )
-    fp = save_data("open-weather-map", city, forecast)
-    return fp
+
+    try:
+        forecast = owm.get_openweathermap_data(
+            lat=coords.lat, long=coords.long, api_key=api_key
+        )
+        fp = save_data("open-weather-map", city, forecast)
+        logging.info(f"Saved results to '{fp.as_posix()}'")
+    except HTTPError as http_err:
+        logging.error(
+            f"OpenWeatherMap API request error ({http_err.response.status_code})."
+        )
+        logging.error(http_err.response.json()["detail"])
+        if first_attempt:
+            logging.info("Retrying request to OpenWeatherMap.")
+            open_weather_map(city=city, api_key=api_key, first_attempt=False)
+    except Exception as err:
+        logging.error(err)
 
 
 @app.command()
-def climacell(city: str, api_key: Optional[str] = None) -> Path:
+def climacell(
+    city: str, api_key: Optional[str] = None, first_attempt: bool = True
+) -> None:
+    logging.info("Sending request to ClimaCell API.")
     if api_key is None:
         try:
             api_key = keys.climacell_api_key
         except Exception as err:
-            print(err)
-            raise ValueError("ClimaCell key error.")
+            logging.error("Unable to get API key for ClimaCell.")
+            logging.error(err)
+            return
 
     coords = get_coordinates(city)
-    forecast = cc.get_climacell_data(lat=coords.lat, long=coords.long, api_key=api_key)
-    fp = save_data("climacell", city, forecast)
-    return fp
+    try:
+        forecast = cc.get_climacell_data(
+            lat=coords.lat, long=coords.long, api_key=api_key
+        )
+        fp = save_data("climacell", city, forecast)
+        logging.info(f"Saved results to '{fp.as_posix()}'")
+    except HTTPError as http_err:
+        logging.error(f"ClimaCell API request error ({http_err.response.status_code}).")
+        logging.error(http_err.response.json()["detail"])
+        if first_attempt:
+            logging.info("Retrying request to ClimaCell.")
+            climacell(city=city, api_key=api_key, first_attempt=False)
+    except Exception as err:
+        logging.error(err)
 
 
 @app.command()
@@ -111,15 +173,11 @@ def all_data(
     owm_key: Optional[str] = None,
     cc_key: Optional[str] = None,
 ):
-    _ = national_weather_service(city=city)
-    _ = accuweather(city=city, api_key=accu_key)
-    _ = open_weather_map(city=city, api_key=owm_key)
-    _ = climacell(city=city, api_key=cc_key)
+    national_weather_service(city=city)
+    accuweather(city=city, api_key=accu_key)
+    open_weather_map(city=city, api_key=owm_key)
+    climacell(city=city, api_key=cc_key)
 
 
 if __name__ == "__main__":
     app()
-
-
-# TODO: propagate errors from requests in weather_forecast_collection package and handle here.
-# TODO: if errors on server (such as 500), automatically re-run at least once
