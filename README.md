@@ -7,8 +7,7 @@
 [![License: GPLv3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 A repository of weather forecast and nowcast data collected using the ['weather-forecast-collection'](https://github.com/jhrcook/weather_forecast_collection) package.
-
-This is currently under development, but the goal is to have it run as a chron-job on GitHub Actions every hour to collect the current weather and weather predictions.
+Data is collected every hour from 4 data sources: [the US National Weather Service](https://www.weather.gov), [Accuweather](https://www.accuweather.com), [ClimaCell](https://www.climacell.co), and [OpenWeatherMap](https://openweathermap.org).
 
 ## Setup
 
@@ -24,6 +23,8 @@ Make sure the CLI is working by trying the following command.
 ```
 
 ## Data
+
+[![Data Collection](https://github.com/jhrcook/weather-forecast-data/actions/workflows/continuous-data-collection.yml/badge.svg)](https://github.com/jhrcook/weather-forecast-data/actions/workflows/continuous-data-collection.yml)
 
 The data collected is available in the "data/" directory of the [`weather-data`](https://github.com/jhrcook/weather-forecast-data/tree/weather-data) branch of the GitHub repo.
 
