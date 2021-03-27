@@ -1,13 +1,23 @@
 name: Data Collection
-on:
-  schedule:
-    - cron: '0 */1 * * *'
+on: push
+  # schedule:
+  #   - cron: '0 */1 * * *'
 
 
 jobs:
   run:
     name: Collect weather data
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        WEATHER_SOURCE: [climacell, national-weather-service, open-weather-map]
+        include:
+          - WEATHER_SOURCE: climacell
+            API_KEY: ${{ secrets.CLIMACELL_API_KEY }}
+          - WEATHER_SOURCE: national-weather-service
+            API_KEY: ""
+          - WEATHER_SOURCE:  open-weather-map
+            API_KEY: ${{ secrets.OPENWEATHERMAP_API_KEY }}
     steps:
       - name: Get current date
         id: date
@@ -27,14 +37,16 @@ jobs:
         run: pip install -r requirements.txt
       - name: Collect data
         run: |
-          ./main.py all-data Boston \
-            --accu-key=${{ secrets.ACCUWEATHER_API_KEY }} \
-            --owm-key=${{ secrets.OPENWEATHERMAP_API_KEY }} \
-            --cc-key=${{ secrets.CLIMACELL_API_KEY }}
+          ./main.py ${{ matrix.WEATHER_SOURCE }} Boston ${{ matrix.API_KEY }}
+        # run: |
+        #   ./main.py all-data Boston \
+        #     --accu-key=${{ secrets.ACCUWEATHER_API_KEY }} \
+        #     --owm-key=${{ secrets.OPENWEATHERMAP_API_KEY }} \
+        #     --cc-key=${{ secrets.CLIMACELL_API_KEY }}
       - name: Commit new data
         uses: EndBug/add-and-commit@v7.1.0
         env:
-          COMMIT_MSG: GH Action data collection on ${{ steps.date.outputs.date }}
+          COMMIT_MSG: ${{ matrix.WEATHER_SOURCE }} data collection on ${{ steps.date.outputs.date }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           author_name: github-actions
