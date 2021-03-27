@@ -16,7 +16,7 @@ from weather_forecast_collection.apis import openweathermap_api as owm
 
 logging.basicConfig(
     level=logging.INFO,
-    format="[%(levelname)s] %(asctime)s - %(funcName)s - %(message)s",
+    format="[%(levelname)s] %(asctime)s - %(funcName)s [line %(lineno)d] - %(message)s",
     datefmt="%d-%b-%y %H:%M:%S",
 )
 
