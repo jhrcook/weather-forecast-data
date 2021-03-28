@@ -1,0 +1,42 @@
+name: Accuweather Collection
+
+on:
+  schedule:
+    - cron: '30 */2 * * *'
+
+jobs:
+  run:
+    name: Collect weather data
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%dT%H:%M:%S')"
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Setup Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+          architecture: 'x64'
+      - name: Python details
+        run: |
+          python3 --version
+          which python3
+      - name: Pip install packages
+        run: pip install -r requirements.txt
+      - name: Collect data
+        run: ./main.py accuweather boston --api-key=${{ secrets.ACCUWEATHER_API_KEY }}
+      - name: Commit new data
+        uses: EndBug/add-and-commit@v7.1.0
+        env:
+          COMMIT_MSG: GH Action Accuweather collection on ${{ steps.date.outputs.date }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          author_name: github-actions
+          author_email: 41898282+github-actions[bot]@users.noreply.github.com
+          message: ${{ env.COMMIT_MSG }}
+          add: 'data/*json'
+          branch: 'weather-data'
+          push: true
+          pull_strategy: '--no-rebase'
