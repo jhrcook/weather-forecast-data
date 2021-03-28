@@ -24,7 +24,7 @@ try:
     import keys
 except:
     print("Module 'keys' not found - API keys must be passed by CLI.")
-from coordinates import get_coordinates
+from coordinates import all_cities, get_coordinates
 
 app = typer.Typer()
 
@@ -54,8 +54,8 @@ def read_data(fp: Path, model: Callable):
 
 
 @app.command()
-def national_weather_service(city: str, first_attempt: bool = True) -> None:
-    logging.info("Sending request to NWS API.")
+def national_weather_service(city: str, n_attempt: int = 1) -> None:
+    logging.info(f"Sending request for '{city}' to NWS API.")
     coords = get_coordinates(city)
     try:
         forecast = nws.get_nws_forecast(lat=coords.lat, long=coords.long)
@@ -64,9 +64,9 @@ def national_weather_service(city: str, first_attempt: bool = True) -> None:
     except HTTPError as http_err:
         logging.error(f"NWS API request error ({http_err.response.status_code}).")
         logging.error(http_err.response.json()["detail"])
-        if first_attempt:
+        if n_attempt <= 5 and http_err.response.status_code != 404:
             logging.info("Trying NWS API again.")
-            national_weather_service(city=city, first_attempt=False)
+            national_weather_service(city=city, n_attempt=n_attempt + 1)
     except Exception as err:
         logging.error(err)
 
@@ -75,7 +75,7 @@ def national_weather_service(city: str, first_attempt: bool = True) -> None:
 def accuweather(
     city: str, api_key: Optional[str] = None, first_attempt: bool = True
 ) -> None:
-    logging.info("Sending request to AccuWeather API.")
+    logging.info(f"Sending request for '{city}' to AccuWeather API.")
     if api_key is None:
         try:
             api_key = keys.accuweather_api_key
@@ -107,7 +107,7 @@ def accuweather(
 def open_weather_map(
     city: str, api_key: Optional[str] = None, first_attempt: bool = True
 ) -> None:
-    logging.info("Sending request to OpenWeatherMap API.")
+    logging.info(f"Sending request for '{city}' to OpenWeatherMap API.")
     if api_key is None:
         try:
             api_key = keys.openweathermap_api_key
@@ -140,7 +140,7 @@ def open_weather_map(
 def climacell(
     city: str, api_key: Optional[str] = None, first_attempt: bool = True
 ) -> None:
-    logging.info("Sending request to ClimaCell API.")
+    logging.info(f"Sending request for '{city}' to ClimaCell API.")
     if api_key is None:
         try:
             api_key = keys.climacell_api_key
@@ -158,7 +158,7 @@ def climacell(
         logging.info(f"Saved results to '{fp.as_posix()}'")
     except HTTPError as http_err:
         logging.error(f"ClimaCell API request error ({http_err.response.status_code}).")
-        logging.error(http_err.response.json()["detail"])
+        logging.error(http_err.response.json()["message"])
         if first_attempt:
             logging.info("Retrying request to ClimaCell.")
             climacell(city=city, api_key=api_key, first_attempt=False)
@@ -172,11 +172,23 @@ def all_data(
     accu_key: Optional[str] = None,
     owm_key: Optional[str] = None,
     cc_key: Optional[str] = None,
+    skip_accuweather: bool = False,
 ):
+    if city == "ALL":
+        for c in all_cities():
+            all_data(
+                city=c,
+                accu_key=accu_key,
+                owm_key=owm_key,
+                cc_key=cc_key,
+                skip_accuweather=skip_accuweather,
+            )
+        return
     national_weather_service(city=city)
-    accuweather(city=city, api_key=accu_key)
     open_weather_map(city=city, api_key=owm_key)
     climacell(city=city, api_key=cc_key)
+    if not skip_accuweather:
+        accuweather(city=city, api_key=accu_key)
 
 
 if __name__ == "__main__":
