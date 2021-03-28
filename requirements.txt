@@ -1,4 +1,4 @@
 requests==2.25
 pydantic==1.8
-weather-forecast-collection @ git+https://github.com/jhrcook/weather_forecast_collection.git@v0.1.3
+weather-forecast-collection @ git+https://github.com/jhrcook/weather_forecast_collection.git@v0.1.4
 typer==0.3.2
