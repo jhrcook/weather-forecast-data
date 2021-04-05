@@ -50,7 +50,7 @@ def make_next_dir(inside_dir: Path) -> Path:
 
 
 def get_save_dir() -> Path:
-    MAX_FILES = 5
+    MAX_FILES = 1000
     for lvl_one in DATA_DIR.iterdir():
         if lvl_one.is_dir():
             num_files_in_lvl_one = len(list(lvl_one.iterdir()))
