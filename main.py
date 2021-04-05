@@ -2,6 +2,7 @@
 
 import json
 import logging
+import shutil
 from datetime import datetime
 from pathlib import Path
 from typing import Callable, Optional
@@ -37,8 +38,39 @@ def fmt_date(dt: datetime) -> str:
     return dt.strftime("%Y-%m-%dT%H:%M:%S")
 
 
+def make_next_dir(inside_dir: Path) -> Path:
+    all_dirs = [int(d.name) for d in inside_dir.iterdir() if d.is_dir()]
+    if len(all_dirs) == 0:
+        new_dir_num = 1
+    else:
+        new_dir_num = max(all_dirs) + 1
+    new_dir = inside_dir / str(new_dir_num).rjust(4, "0")
+    new_dir.mkdir()
+    return new_dir
+
+
+def get_save_dir() -> Path:
+    MAX_FILES = 5
+    for lvl_one in DATA_DIR.iterdir():
+        if lvl_one.is_dir():
+            num_files_in_lvl_one = len(list(lvl_one.iterdir()))
+            if num_files_in_lvl_one >= MAX_FILES:
+                continue
+
+            for lvl_two in lvl_one.iterdir():
+                if lvl_two.is_dir():
+                    num_files = len(list(lvl_two.iterdir()))
+                    if num_files < MAX_FILES:
+                        return lvl_two
+            return make_next_dir(lvl_one)
+
+    _ = make_next_dir(DATA_DIR)
+    new_dir = get_save_dir()  # run again to get a directory in this new directory.
+    return new_dir
+
+
 def make_filepath(source: str, city: str) -> Path:
-    return DATA_DIR / f"{source}_{city}_{fmt_date(datetime.now())}.json"
+    return get_save_dir() / f"{source}_{city}_{fmt_date(datetime.now())}.json"
 
 
 def save_data(source: str, city: str, data: BaseModel) -> Path:
@@ -51,6 +83,17 @@ def save_data(source: str, city: str, data: BaseModel) -> Path:
 def read_data(fp: Path, model: Callable):
     with open(fp) as json_file:
         return model(**json.loads(json.load(json_file)))
+
+
+@app.command()
+def migrate_data_files_to_subdir_format() -> None:
+    n_files_moved = 0
+    for f in DATA_DIR.iterdir():
+        if f.is_file() and "json" in f.name:
+            new_dir = get_save_dir()
+            shutil.move(f, new_dir)
+            n_files_moved += 1
+    print(f"Number of files relocated: {n_files_moved}")
 
 
 @app.command()
