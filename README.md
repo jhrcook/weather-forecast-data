@@ -27,6 +27,11 @@ Make sure the CLI is working by trying the following command.
 [![Data Collection](https://github.com/jhrcook/weather-forecast-data/actions/workflows/continuous-data-collection.yml/badge.svg)](https://github.com/jhrcook/weather-forecast-data/actions/workflows/continuous-data-collection.yml)
 
 The data collected is available in the "data/" directory of the [`weather-data`](https://github.com/jhrcook/weather-forecast-data/tree/weather-data) branch of the GitHub repo.
+The GitHub web interface and API (I use [PyGithub](https://pygithub.readthedocs.io/en/latest/#) to access reposotries within Python) have a limit of only presenting 1,000 files.
+To get around this without having to set up a separate data store, I am using a two-level subdirectory data storage system.
+In essence, files are stored within two levels of subdirectories in "data/" such that each directory only holds at most 1,000 files.
+This method is not perfect nor ideal, but at my scale of data collection, it should last well beyond my lifetime.
+All of the data files can be obtained by recursively searching the "data/" directory.
 
 ### GitHub Continuous Data Collection
 
