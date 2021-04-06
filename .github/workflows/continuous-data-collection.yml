@@ -14,6 +14,8 @@ jobs:
         run: echo "::set-output name=date::$(date +'%Y-%m-%dT%H:%M:%S')"
       - name: Checkout repo
         uses: actions/checkout@v2
+        with:
+          ref: weather-data
       - name: Setup Python 3.9
         uses: actions/setup-python@v2
         with:
