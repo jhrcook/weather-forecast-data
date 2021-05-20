@@ -106,7 +106,7 @@ def national_weather_service(city: str, n_attempt: int = 1) -> None:
         logging.info(f"Saved results to '{fp.as_posix()}'")
     except HTTPError as http_err:
         logging.error(f"NWS API request error ({http_err.response.status_code}).")
-        logging.error(http_err.response.json()["detail"])
+        logging.error(http_err)
         if n_attempt <= 5 and http_err.response.status_code != 404:
             logging.info("Trying NWS API again.")
             national_weather_service(city=city, n_attempt=n_attempt + 1)
